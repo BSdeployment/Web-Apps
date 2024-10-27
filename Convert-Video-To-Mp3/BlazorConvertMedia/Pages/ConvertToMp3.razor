@@ -1,0 +1,170 @@
+﻿@inject HttpClient http
+@using System.Timers;
+
+
+<div class="text-center card my-center" style="max-width:max-content; margin:0 auto;padding:50px;border-radius:30px">
+    <h3 style="margin-bottom:25px">Upload Video File To Convert</h3>
+    <InputFile dir="rtl" class="upload-box"  OnChange="OnUpload"/>
+    <div class="text-center">
+        <button @onclick="SubmitConvert" class="btn btn-primary " style="max-width:150px;border-radius:25px;margin-top:15px;padding:12px 20px">Convert</button>
+    </div>
+   
+    <p style="color:red">@errorMessage</p>
+    @if (started)
+    {
+        <div>
+            <p>Convert now.... please wait....</p>
+
+            <div class="text-center" style="margin-bottom:12px">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+
+                </div>
+            </div>
+
+            <div class="text-center">
+                <span class="bg-primary text-white text-center" style="padding:10px 30px;max-width:100px">@progress%</span>
+            </div>
+
+        </div>
+    }
+   
+    @if (sucsess)
+    {
+        <div>
+            <p>Conversion completed!</p> <br /> <a href="@downloadUrl" target="_blank" download="@audioFileName">Click here to download the audio file</a>
+        </div>
+    }
+   
+   
+   
+</div>
+
+
+
+@code {
+    bool sucsess = false;
+    bool started = false;
+    IBrowserFile videoFile;
+    string errorMessage;
+    string audioFileName;
+    string downloadUrl;
+    int progress;
+
+    System.Timers.Timer timer = new System.Timers.Timer(500);
+    private void RunTimer()
+    {
+
+        timer.Enabled = true;
+        timer.Elapsed += Timer_Elapsed;
+
+        timer.Start();
+
+    }
+
+
+
+    void Timer_Elapsed(object? sender, ElapsedEventArgs e)
+    {
+        long size = videoFile.Size;
+        double sizeMb = Math.Round((double)videoFile.Size / (1024 * 1024), 2);
+
+        int mb =(int)sizeMb; 
+
+        int interval = (100 / mb) / 2;
+
+        progress += interval;
+
+        if(progress> 100)
+        {
+            var timer = (Timer)sender;
+            timer.Stop();
+            progress = 100;
+        }
+        StateHasChanged();
+
+
+
+
+
+
+
+    }
+
+    protected override void OnInitialized()
+    {
+
+        base.OnInitialized();
+    }
+
+
+
+    private void OnUpload(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount > 0)
+        {
+            videoFile = e.File;
+        }
+    }
+    private async Task SubmitConvert()
+    {
+        if(videoFile == null)
+        {
+            errorMessage = "please upload video file";
+            return;
+        }
+        started = true;
+        RunTimer();
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            var fileContent = new StreamContent(videoFile.OpenReadStream(104857600)); // 100MB max
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(videoFile.ContentType);
+
+            content.Add(fileContent, "videoFile", videoFile.Name);
+
+            var response = await http.PostAsync("https://localhost:7050/convert", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var stream = await response.Content.ReadAsStreamAsync();
+                var fileName = videoFile.Name.Replace(Path.GetExtension(videoFile.Name), ".mp3");
+                audioFileName = fileName;
+
+
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                var byteArray = memoryStream.ToArray();
+
+                var base64string = Convert.ToBase64String(byteArray);
+
+
+                downloadUrl = $"data:audio/mpeg;base64,{base64string}";
+                sucsess = true;
+                started = false;
+                timer.Stop();
+                progress = 0;
+            }
+            else
+            {
+                timer.Stop();
+                started = false;
+                progress = 0;
+
+                errorMessage = "conversion Faild" + response.ReasonPhrase;
+
+            }
+        }
+        catch (Exception ex)
+        {
+            timer.Stop();
+            started = false;
+            progress = 0;
+            errorMessage = $"Error uploading file: {ex.Message}";
+        }
+
+
+
+    }
+
+}

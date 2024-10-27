@@ -1,0 +1,97 @@
+﻿@page "/upload-video"
+@using Microsoft.AspNetCore.Components.Forms
+@inject HttpClient Http
+
+
+<h3>Upload Video for Conversion</h3>
+
+@if (!string.IsNullOrEmpty(audioFileName))
+{
+    <p>Conversion completed! <a href="@downloadUrl" target="_blank" download="@audioFileName">Click here to download the audio file</a>.</p>
+}
+else
+{
+
+    
+    <EditForm Model="@this" OnValidSubmit="HandleValidSubmit">
+        <InputFile OnChange="HandleFileSelected" />
+        <br />
+        <button type="submit" class="btn btn-primary" disabled="@(!canUpload)">Upload and Convert</button>
+    </EditForm>
+}
+
+@if (isUploading)
+{
+    <p>Uploading and converting... please wait.</p>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color: red;">@errorMessage</p>
+}
+
+@code {
+    private IBrowserFile? selectedFile;
+    private bool isUploading = false;
+    private bool canUpload = false;
+    private string? audioFileName;
+    private string? downloadUrl;
+    private string? errorMessage;
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        canUpload = selectedFile != null;
+        errorMessage = null;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (selectedFile == null)
+        {
+            errorMessage = "Please select a file.";
+            return;
+        }
+
+        isUploading = true;
+        canUpload = false;
+
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            var fileContent = new StreamContent(selectedFile.OpenReadStream(104857600)); // 100MB max
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
+            content.Add(fileContent, "videoFile", selectedFile.Name);
+
+            var response = await Http.PostAsync("/convert", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // קבל את הזרם כקובץ להורדה
+                var stream = await response.Content.ReadAsStreamAsync();
+                var fileName = selectedFile.Name.Replace(Path.GetExtension(selectedFile.Name), ".mp3");
+                audioFileName = fileName;
+
+                // צור לינק להורדה באמצעות JavaScript
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                var byteArray = memoryStream.ToArray();
+                var base64String = Convert.ToBase64String(byteArray);
+                downloadUrl = $"data:audio/mpeg;base64,{base64String}";
+            }
+            else
+            {
+                errorMessage = "Conversion failed: " + response.ReasonPhrase;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error uploading file: {ex.Message}";
+        }
+        finally
+        {
+            isUploading = false;
+            canUpload = true;
+        }
+    }
+}

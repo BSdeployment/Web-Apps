@@ -1,0 +1,6 @@
+@ConvertMediaFilesApi_HostAddress = http://localhost:5220
+
+GET {{ConvertMediaFilesApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
