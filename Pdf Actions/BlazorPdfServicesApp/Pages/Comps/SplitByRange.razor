@@ -1,0 +1,104 @@
+﻿
+@inject HttpClient Http
+<div class="card text-center col-10 col-md-4" style="padding:30px;margin:30px auto;border-radius:30px">
+
+    <h3 style="margin-bottom:35px">Upload and Split PDF By Range</h3>
+    <div style="max-width:max-content;margin:0 auto;">
+        <InputFile OnChange="OnFileSelected" class="upload-box" />
+        <br />
+        <label class="form-label mt-3">start</label>
+        <br/>
+        <InputNumber @bind-Value="start" class="form-control" />
+        <br />
+        <label class="form-label mt-3">end</label>
+        <br />
+        <InputNumber @bind-Value="end" class="form-control" />
+        <br />
+
+
+        <button class="btn btn-success" @onclick="UploadFile" disabled="@(!isFileSelected)">Upload and Split</button>
+
+        @if (isProcessing)
+        {
+            <p>Processing... Please wait.</p>
+        }
+
+        @if (isSuccess)
+        {
+            <p>PDF was successfully split. <a href="@downloadLink" download="split-files.pdf">Download the split pdf file</a></p>
+        }
+
+        @if (errorMessage != null)
+        {
+            <p style="color:red">@errorMessage</p>
+        }
+    </div>
+    
+
+</div>
+
+
+@code {
+    private IBrowserFile selectedFile;
+    private bool isFileSelected = false;
+    private bool isProcessing = false;
+    private bool isSuccess = false;
+    private string downloadLink;
+    private string errorMessage;
+
+    int start, end;
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        isFileSelected = true;
+    }
+
+    private async Task UploadFile()
+    {
+        if (selectedFile == null)
+        {
+            errorMessage = "Please select a file.";
+            return;
+        }
+
+        isProcessing = true;
+        isSuccess = false;
+        errorMessage = null;
+
+        try
+        {
+            var content = new MultipartFormDataContent();
+            var fileContent = new StreamContent(selectedFile.OpenReadStream(50000000)); // Set max file size to 50MB
+            content.Add(fileContent, "file", selectedFile.Name);
+
+            // Send the file to the API
+            var response = await Http.PostAsync($"https://localhost:7106/api/pdfactions/splitrange?start={start}&end={end}", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Get the download link from the API response
+                var fileStream = await response.Content.ReadAsStreamAsync();
+
+                // Convert the stream to a downloadable file link
+                var buffer = new byte[response.Content.Headers.ContentLength ?? 0];
+                await fileStream.ReadAsync(buffer, 0, buffer.Length);
+
+                var base64String = Convert.ToBase64String(buffer);
+                downloadLink = $"data:application/pdf;base64,{base64String}";
+
+                isSuccess = true;
+            }
+            else
+            {
+                errorMessage = "Error splitting PDF.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+
+        isProcessing = false;
+    }
+}

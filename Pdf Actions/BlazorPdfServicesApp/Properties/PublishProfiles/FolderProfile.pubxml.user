@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Users\USER001\source\repos\PdfActionApi\BlazorPdfServicesApp\bin\Release\net8.0\browser-wasm\publish1\</_PublishTargetUrl>
+    <History>True|2024-09-14T20:49:14.6526303Z||;True|2024-09-11T23:28:50.9558544+03:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>

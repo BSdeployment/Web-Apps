@@ -1,0 +1,76 @@
+﻿@page "/mergepdfs"
+@using Microsoft.AspNetCore.Components.Forms
+@inject HttpClient httpClient
+
+<div class="card text-center col-10 col-md-4" style="padding:30px;margin:30px auto;border-radius:30px">
+    <h3 style="margin-bottom:35px">Upload PDF Files to Merge</h3>
+    <div style="max-width:max-content;margin:0 auto;">
+        <InputFile OnChange="HandleFileSelected" multiple class="upload-box" />
+        <br />
+        @if (selectedFiles.Count > 0)
+        {
+            <ul>
+                @foreach (var file in selectedFiles)
+                {
+                    <li>@file.Name (@file.Size / 1024) KB</li>
+                }
+            </ul>
+            <button class="btn btn-success" @onclick="MergeFiles">Merge Files</button>
+        }
+
+        @if (!string.IsNullOrEmpty(mergedFileUrl))
+        {
+            <br />
+            <a href="@mergedFileUrl" download="merged.pdf">Download Merged PDF</a>
+        }
+    </div>
+    
+
+</div>
+
+
+@code {
+    private List<IBrowserFile> selectedFiles = new List<IBrowserFile>();
+    private string mergedFileUrl;
+
+    // שלב 1: העלאת קבצים
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFiles = e.GetMultipleFiles().ToList();
+    }
+
+    // שלב 2: מיזוג קבצים ושליחתם ל-API
+    private async Task MergeFiles()
+    {
+        if (selectedFiles.Count == 0)
+        {
+            return;
+        }
+
+        var content = new MultipartFormDataContent();
+
+        foreach (var file in selectedFiles)
+        {
+            var fileStream = file.OpenReadStream(20 * 1024 * 1024); // עד 20MB לקובץ
+            var streamContent = new StreamContent(fileStream);
+            content.Add(streamContent, "files", file.Name);
+        }
+
+        var response = await httpClient.PostAsync("https://localhost:7106/api/pdfactions/merge", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var mergedStream = await response.Content.ReadAsStreamAsync();
+            var memoryStream = new MemoryStream();
+            await mergedStream.CopyToAsync(memoryStream);
+
+            // שלב 3: יצירת קישור להורדה (data URL)
+            var base64Data = Convert.ToBase64String(memoryStream.ToArray());
+            mergedFileUrl = $"data:application/pdf;base64,{base64Data}";
+        }
+        else
+        {
+            Console.WriteLine("Error merging files.");
+        }
+    }
+}
