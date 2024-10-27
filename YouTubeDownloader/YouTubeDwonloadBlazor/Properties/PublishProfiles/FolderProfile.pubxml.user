@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Users\USER001\source\repos\YouTubeDwonloadApi\YouTubeDwonloadBlazor\bin\Release\net8.0\browser-wasm\publish\</_PublishTargetUrl>
+    <History>True|2024-10-09T20:09:08.4281561Z||;True|2024-10-09T23:05:11.5138200+03:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>

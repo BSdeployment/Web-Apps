@@ -1,0 +1,80 @@
+﻿@inject HttpClient http
+@using YouTubeDwonloadBlazor.Model
+    <div class="con card text-center">
+        <p>by bs-dotnet</p>
+    <p>this work with api <b>localhost port 7159</b></p>
+        <h1>You Tube Downloader</h1>
+        <h2>Gen Link For Download</h2> 
+        <input type="text" class="form-control" placeholder="Insert Link Here" @bind="url">
+        <button class="btn btn-primary" @onclick="GenLink">Gen Link</button>
+    @if (success)
+    {
+        <a href="@output_url" target="_blank">Open Link</a>
+    }
+    @if (faild)
+    {
+        <p>error:</p>
+        <p style="color:red">@error</p>
+    }
+
+        
+    </div>
+
+@code{
+    string url;
+    string error;
+    string? output_url;
+    bool success = false;
+    bool faild = false;
+    async Task GenLink()
+    {
+        faild = false;
+        success = false;
+        if (string.IsNullOrEmpty(url))
+        {
+            error = "the url input not can be null";
+            faild = true;
+            return;
+        }
+
+        var res = await http.PostAsJsonAsync("https://localhost:7159/genlink", url);
+
+        if (res.IsSuccessStatusCode)
+        {
+            var respone = await res.Content.ReadFromJsonAsync<ResponeURL>();
+
+            if(respone is not null && respone.Result is not null)
+            {
+                if(respone.Result.StartsWith("http"))
+                {
+                    output_url = respone.Result;
+                    success = true;
+                }
+                else
+                {
+                    error = respone.Result;
+                    faild = true;
+                }
+
+            }
+
+        }
+        else
+        {
+            var respone = await res.Content.ReadAsStringAsync();
+
+            if(respone is not null)
+            {
+                error = respone;
+                faild = true;
+            }
+        }
+
+
+
+
+    }
+   
+   
+}
+ 
