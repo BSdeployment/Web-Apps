@@ -1,0 +1,120 @@
+﻿@page "/users"
+@inject HttpClient http
+@using AuthApiApplication
+@inject IJSRuntime js
+@inject IDialogService dialog
+
+<div class="text-center" style="padding-top:60px">
+    <h2>All Users</h2>
+<div class="text-center" style="margin-bottom:100px">
+<button @onclick="showDialog"  class="btn btn-primary">AddUsers</button>
+
+
+
+</div>
+    @if(users is not null)
+    @foreach(var user in users)
+    {
+        <div class="col-10 col-md-6 text-center mx-auto">
+            <p>
+                <span class="fw-bold fs-4">User Name:</span>
+                <span>@user.username</span>
+                <br>
+                <span>describe: Lorem ipsum dolor sit amet consectetur adipisicing elit. Odio, vel.</span>
+            </p>
+            <div>
+                    <button class="btn btn-danger" style="padding: 10px 20px;border-radius: 20px;" @onclick="()=>Remove(user.username)">
+                    Remove User
+                </button>
+                <span></span>
+            </div>
+            <div class="mx-auto bg-primary" style="max-width:max-content">
+                <hr style="width: 150px;">
+
+            </div>
+
+        </div>
+    }
+
+    
+</div>
+
+
+@code {
+    List<UserModel>? users = new();
+    string usersname;
+    public UserModel userModel { get; set; } = new UserModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            users = await http.GetFromJsonAsync<List<UserModel>>("https://localhost:7043/getusersnames");
+        }
+        catch
+        {
+
+        }
+
+
+    }
+
+    async Task Remove(string username)
+
+    {
+        var removeResult =  await dialog.ShowConfirmationAsync("You Sure By Deleted?");
+
+        var delete = await removeResult.Result;
+
+        bool canceleted = delete.Cancelled;
+
+        if (canceleted)
+        {
+            return;
+        }
+        else
+        {
+            var res = await http.GetAsync($"https://localhost:7043/removeuser/{username}");
+
+            if (res.IsSuccessStatusCode)
+            {
+               
+                users = await http.GetFromJsonAsync<List<UserModel>>("https://localhost:7043/getusersnames");
+                StateHasChanged();
+                await dialog.ShowSuccessAsync($"You success Remove User -  {username}");
+
+            }
+            else
+            {
+                await dialog.ShowErrorAsync($"Faild To Remove Specific User - {username}");
+            }
+        }
+
+    }
+    async Task showDialog()
+    {
+        var res = await dialog.ShowDialogAsync<AddUsers>(userModel,new DialogParameters { });
+
+        var result = await res.Result;
+
+        if (!result.Cancelled && result.Data != null)
+        {
+            userModel = (UserModel)result.Data;
+
+            var registerUser = await http.PostAsJsonAsync("https://localhost:7043/register",userModel);
+
+
+            if (registerUser.IsSuccessStatusCode)
+            {
+                await dialog.ShowSuccessAsync($"Rgister User {userModel.username} Success!", "Register");
+                users = await http.GetFromJsonAsync<List<UserModel>>("https://localhost:7043/getusersnames");
+                StateHasChanged();
+            }
+            else
+            {
+                await dialog.ShowErrorAsync($"Register Faild", "Faild");
+            }
+        }
+    }
+
+}

@@ -1,0 +1,42 @@
+﻿@implements IDialogContentComponent<UserModel>
+@using AuthApiApplication
+
+
+<FluentDialogHeader>
+   Create Users
+</FluentDialogHeader>
+
+<FluentDialogBody>
+    <div class="text-center">
+        <h2 class="text-center">Add New Users</h2>
+        <p class="text-center">create a new user in database</p>
+
+
+        <FluentLabel>User Name</FluentLabel>
+        <FluentTextField @bind-Value="Content.username" />
+        <FluentLabel>Password</FluentLabel>
+        <FluentTextField @bind-Value="Content.password" TextFieldType="TextFieldType.Password" />
+        <div class="text-center">
+            <FluentButton @onclick="okbutton" Appearance="Appearance.Accent">Ok</FluentButton>
+        </div>
+    </div>
+   
+</FluentDialogBody>
+
+<FluentDialogFooter>
+ by bs dotnet
+   
+</FluentDialogFooter>
+
+@code {
+    [Parameter]
+    public UserModel Content { get; set; } = default!;
+
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    async Task okbutton()
+    {
+       await Dialog.CloseAsync(Content);
+    }
+}

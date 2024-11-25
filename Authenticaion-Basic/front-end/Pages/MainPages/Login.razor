@@ -1,0 +1,62 @@
+﻿@page "/login"
+@inject HttpClient http
+@using AuthApiApplication
+@inject IJSRuntime js
+<div class="text-center card col-10 col-md-4 mx-auto mt-3 p-3">
+    <h2 class="fs-1">Login</h2>
+    <p style="margin-top: 20px;" class="fw-bold fs-3">This Login Base Jwt</p>
+    <label for="">UserName</label>
+
+    <input @bind="user.username" class="form-control" type="text" >
+
+    <label for="">Password</label>
+
+    <input @bind="user.password" class="form-control" type="password" >
+    <br>
+    <button @onclick="LoginNow" class="btn btn-primary mt-3">Login</button>
+
+    
+</div>
+<h2 class="text-center">@result</h2>
+
+@if (logout)
+{
+   
+}
+<div class="text-center">
+    <button class="btn btn-success" @onclick="Logout">Logout</button>
+</div>
+
+@code {
+    private UserModel user = new UserModel();
+    string? result;
+    bool logout;
+    async Task LoginNow()
+    {
+
+        var res = await http.PostAsJsonAsync("https://localhost:7043/login", user);
+
+        if (res.IsSuccessStatusCode)
+        {
+            var jsonResult = await res.Content.ReadFromJsonAsync<LoginRespones>();
+
+
+            result = jsonResult?.Message;
+            await js.InvokeVoidAsync("localStorageManager.setItem","Token", jsonResult?.Token);
+            logout = true;
+        }
+
+        else
+        {
+            result = res.StatusCode.ToString();
+        }
+
+    }
+    async Task Logout()
+    {
+        await js.InvokeVoidAsync("localStorageManager.removeItem", "Token");
+    }
+
+
+
+}
