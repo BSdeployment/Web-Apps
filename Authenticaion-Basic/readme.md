@@ -66,3 +66,10 @@ This is a basic implementation of authentication and authorization using JWT in.
 *   [Role-Based Access Control (RBAC)](https://en.wikipedia.org/wiki/Role-based_access_control)
 *   [Privilege-Based Access Control (PBAC)](https://en.wikipedia.org/wiki/Privilege-based_access_control)
 *   [Policy-Based Access Control (PBAC)](https://en.wikipedia.org/wiki/Policy-based_access_control)
+
+## example
+
+<img width="500" src="https://github.com/BSdeployment/Web-Apps/blob/main/Authenticaion-Basic/%D7%A6%D7%99%D7%9C%D7%95%D7%9D%20%D7%9E%D7%A1%D7%9A%202024-11-25%20102723.png?raw=true"/>
+<img width="500" src="https://github.com/BSdeployment/Web-Apps/blob/main/Authenticaion-Basic/%D7%A6%D7%99%D7%9C%D7%95%D7%9D%20%D7%9E%D7%A1%D7%9A%202024-11-25%20102730.png?raw=true"/>
+<img width="500" src="https://github.com/BSdeployment/Web-Apps/blob/main/Authenticaion-Basic/%D7%A6%D7%99%D7%9C%D7%95%D7%9D%20%D7%9E%D7%A1%D7%9A%202024-11-25%20102736.png?raw=true"/>
+<img width="500" src="https://github.com/BSdeployment/Web-Apps/blob/main/Authenticaion-Basic/%D7%A6%D7%99%D7%9C%D7%95%D7%9D%20%D7%9E%D7%A1%D7%9A%202024-11-25%20102742.png?raw=true"/>
