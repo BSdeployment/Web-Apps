@@ -1,0 +1,6 @@
+@ApiWuthHush_HostAddress = http://localhost:5072
+
+GET {{ApiWuthHush_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
