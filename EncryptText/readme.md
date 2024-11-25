@@ -54,4 +54,4 @@ To run the project, follow these steps:
 Note: Replace `secret_key_here` and `initialization_vector_here` with your actual secret key and initialization vector.
 
 ## example
-<img src=""/>
+<img width="600" src="https://github.com/BSdeployment/Web-Apps/blob/main/EncryptText/%D7%A6%D7%99%D7%9C%D7%95%D7%9D%20%D7%9E%D7%A1%D7%9A%202024-11-25%20104036.png?raw=true"/>
