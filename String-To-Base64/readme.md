@@ -24,6 +24,8 @@ The app is built with a **Next.js** frontend and an **ASP.NET Core Web API** bac
   - NPM or Yarn
 - **Backend**:
   - .NET SDK (8.0 or later)
-
+ 
+  - 
+<img src="https://github.com/BSdeployment/Web-Apps/blob/main/String-To-Base64/%D7%A6%D7%99%D7%9C%D7%95%D7%9D%20%D7%9E%D7%A1%D7%9A%202024-11-25%20095635.png?raw=true"/>
 
 
