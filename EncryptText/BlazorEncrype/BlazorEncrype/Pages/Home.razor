@@ -1,0 +1,90 @@
+﻿@page "/"
+@inject HttpClient Http
+<PageTitle>Home</PageTitle>
+
+<div class="text-center" style="margin-top: 30px;">
+    <h1 class="text-center text-primary">Hello,Encrype!</h1>
+    <h2 class="text-success">Encrype/decrype base aes elgorihten</h2>
+    <h4>this is call to api endpoint localhost:5220</h4>
+    <p class="text-center">By Bs DotNet</p>
+</div>
+
+<div class="card col-4 mx-auto p-3">
+    <h2 class="text-center text-primary">Encrype Text By Your Key</h2>
+    <label class="form-label">text</label>
+    <input @bind="@enctext" class="form-control" type="text">
+    <label class="form-label">key</label>
+    <input @bind="@enckey" class="form-control" type="text">
+    <div class="text-center mt-2">
+        <button class="btn btn-primary" @onclick="@Encrypte">Send</button>
+    </div>
+
+    <p class="text-center">@encres</p>
+</div>
+
+<div class="card col-4 mx-auto p-3 mt-2">
+    <h2 class="text-center text-primary">Decrype Text By Your Key</h2>
+    <label class="form-label">text</label>
+    <input @bind="@dectext" class="form-control" type="text">
+    <label class="form-label">key</label>
+    <input @bind="@deckey" class="form-control" type="text">
+    <div class="text-center mt-2">
+        <button class="btn btn-primary" @onclick="Decrype">Send</button>
+    </div>
+
+    <p class="text-center">@decres</p>
+</div>
+
+
+@code{
+    string enctext,enckey,encres;
+    string dectext,deckey,decres;
+
+
+    async Task Encrypte()
+    {
+        var response = await Http.PostAsJsonAsync<EncModel>("http://localhost:5220/enctext",new EncModel{ text = enctext,key=enckey});
+
+        if(response is not null){
+            var res = await response.Content.ReadFromJsonAsync<ResModel>();
+
+            if(res is not null)
+                encres = res.result;
+
+            else
+            {
+                encres = "error";
+            }
+
+
+        }
+        else
+        {
+            encres = "error";
+        }
+    }
+
+    async Task Decrype(){
+        var respone = await Http.PostAsJsonAsync("http://localhost:5220/dectext", new EncModel { text = dectext, key = deckey });
+        if (respone is not null)
+        {
+            var res = await respone.Content.ReadFromJsonAsync<ResModel>();
+            if (res is not null)
+                decres = res.result;
+            else
+                decres = "error";
+        }
+        else
+            decres = "error";
+    }
+
+    class EncModel{
+        public string text{get;set;}
+        public string key{get;set;}
+    }
+    class ResModel
+    {
+        public string result{ get; set; }
+    }
+
+}
